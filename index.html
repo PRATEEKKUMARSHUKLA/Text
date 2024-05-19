@@ -10,8 +10,6 @@
 <textarea id="text-to-speech-input" rows="4" cols="50">Type your text here</textarea>
 <select id="voice-select">
     <option value="default">Default</option>
-    <option value="male">Male</option>
-    <option value="female">Female</option>
 </select>
 <button id="speak-button">Speak</button>
 
@@ -22,23 +20,41 @@ if ('speechSynthesis' in window) {
     const textToSpeechInput = document.getElementById('text-to-speech-input');
     const voiceSelect = document.getElementById('voice-select');
 
+    // Function to populate the voice selection dropdown
+    const populateVoiceList = () => {
+        const voices = speechSynthesis.getVoices();
+        voiceSelect.innerHTML = '<option value="default">Default</option>';
+        
+        // Filter and add male voices
+        const maleVoices = voices.filter(voice => voice.name.includes('male'));
+        maleVoices.slice(0, 10).forEach(voice => {
+            const option = document.createElement('option');
+            option.value = voice.name;
+            option.textContent = voice.name;
+            voiceSelect.appendChild(option);
+        });
+        
+        // Filter and add female voices
+        const femaleVoices = voices.filter(voice => voice.name.includes('female'));
+        femaleVoices.slice(0, 10).forEach(voice => {
+            const option = document.createElement('option');
+            option.value = voice.name;
+            option.textContent = voice.name;
+            voiceSelect.appendChild(option);
+        });
+    };
+
+    // Populate voice list when voices are loaded
+    populateVoiceList();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = populateVoiceList;
+    }
+
     // Function to speak the input text
     const speakText = () => {
         const text = textToSpeechInput.value;
         const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Set voice based on selection
-        switch (voiceSelect.value) {
-            case 'male':
-                utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === 'Microsoft David Desktop - English (United States)');
-                break;
-            case 'female':
-                utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === 'Microsoft Zira Desktop - English (United States)');
-                break;
-            default:
-                utterance.voice = speechSynthesis.getVoices()[0]; // Default voice
-        }
-
+        utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === voiceSelect.value);
         speechSynthesis.speak(utterance);
     };
 

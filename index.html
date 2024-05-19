@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text to Speech</title>
     <script src="https://code.responsivevoice.org/responsivevoice.js?key=DSFtm1Hz"></script>
+    <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,7 +24,14 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             position: relative;
         }
-        input[type="text"], select, input[type="range"], button {
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        select, input[type="range"] {
             width: 80%;
             padding: 10px;
             margin-bottom: 10px;
@@ -31,9 +39,11 @@
             border-radius: 4px;
         }
         button {
+            padding: 10px 20px;
             background-color: #007BFF;
             color: white;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
         }
         button:hover {
@@ -59,6 +69,10 @@
             transform: translate(-50%, -50%);
             background-color: white;
         }
+        #downloadButton {
+            display: none;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -80,7 +94,7 @@
         <div class="slider-label">Similarity: <span id="similarityValue">1</span></div>
         <input type="range" id="similaritySlider" min="0" max="2" step="0.1" value="1">
         <button onclick="speak()">Speak</button>
-        <button id="downloadBtn" onclick="downloadSpeech()" disabled>Download</button>
+        <button id="downloadButton" onclick="downloadAudio()">Download</button>
     </div>
 
     <script>
@@ -110,10 +124,9 @@
             document.getElementById('similarityValue').textContent = this.value;
         });
 
-        var audioChunks = [];
-        var mediaRecorder;
+        var recorder;
 
-        // Function to speak the text
+        // Function to speak the text with countdown timer
         function speak() {
             var text = document.getElementById('textInput').value;
             var voice = document.getElementById('voiceSelect').value;
@@ -123,51 +136,73 @@
             var similarity = parseFloat(document.getElementById('similaritySlider').value);
 
             if (text && voice) {
-                var utterance = new SpeechSynthesisUtterance(text);
-                utterance.voice = speechSynthesis.getVoices().find(v => v.name === voice);
-                utterance.pitch = pitch;
-                utterance.rate = speed;
+                var words = text.split(/\s+/).length;
+                var estimatedDuration = words / (speed * 150 / 60); // Estimated duration in seconds (average 150 WPM)
 
-                // Setup MediaRecorder to capture the speech
-                var stream = document.querySelector('audio').captureStream();
-                mediaRecorder = new MediaRecorder(stream);
+                startCountdown(estimatedDuration);
 
-                mediaRecorder.ondataavailable = function(event) {
-                    if (event.data.size > 0) {
-                        audioChunks.push(event.data);
-                    }
-                };
+                // Modify pitch and speed based on stability and similarity sliders
+                var adjustedPitch = pitch * (1 + (1 - stability) * 0.2 * (Math.random() - 0.5));
+                var adjustedSpeed = speed * (1 + (1 - stability) * 0.2 * (Math.random() - 0.5));
+                adjustedPitch = pitch * similarity + adjustedPitch * (1 - similarity);
+                adjustedSpeed = speed * similarity + adjustedSpeed * (1 - similarity);
 
-                mediaRecorder.onstop = function() {
-                    var blob = new Blob(audioChunks, { type: 'audio/wav' });
-                    var url = URL.createObjectURL(blob);
-                    var a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = 'speech.wav';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                };
+                // Record the speech
+                var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                var source = audioContext.createBufferSource();
+                var dest = audioContext.createMediaStreamDestination();
+                source.connect(dest);
+                recorder = new RecordRTC(dest.stream, { type: 'audio' });
 
-                audioChunks = [];
-                mediaRecorder.start();
-
-                utterance.onend = function() {
-                    mediaRecorder.stop();
-                };
-
-                speechSynthesis.speak(utterance);
+                recorder.startRecording();
+                responsiveVoice.speak(text, voice, { pitch: adjustedPitch, rate: adjustedSpeed, onend: stopRecording });
             } else {
                 alert('Please enter text and select a voice.');
             }
         }
 
-        // Function to download the speech
-        function downloadSpeech() {
-            if (mediaRecorder && mediaRecorder.state === 'inactive') {
-                mediaRecorder.requestData();
-            }
+        function stopRecording() {
+            recorder.stopRecording(function() {
+                var blob = recorder.getBlob();
+                var downloadButton = document.getElementById('downloadButton');
+                downloadButton.style.display = 'inline-block';
+                downloadButton.href = URL.createObjectURL(blob);
+                downloadButton.download = 'speech.mp3';
+            });
+            stopCountdown();
+        }
+
+        // Countdown timer functionality
+        var countdownInterval;
+
+        function startCountdown(duration) {
+            var countdownCircle = document.getElementById('countdownCircle');
+            var countdownTimer = document.getElementById('countdownTimer');
+            var timeLeft = duration;
+
+            countdownCircle.style.display = 'flex';
+
+            countdownTimer.textContent = timeLeft.toFixed(1);
+
+            countdownInterval = setInterval(function() {
+                timeLeft -= 0.1;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownCircle.style.display = 'none';
+                } else {
+                    countdownTimer.textContent = timeLeft.toFixed(1);
+                }
+            }, 100);
+        }
+
+        function stopCountdown() {
+            clearInterval(countdownInterval);
+            document.getElementById('countdownCircle').style.display = 'none';
+        }
+
+        function downloadAudio() {
+            var downloadButton = document.getElementById('downloadButton');
+            downloadButton.click();
         }
     </script>
 </body>

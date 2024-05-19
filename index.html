@@ -9,7 +9,6 @@
 <h1>Text to Speech</h1>
 <textarea id="text-to-speech-input" rows="4" cols="50">Type your text here</textarea>
 <select id="voice-select">
-    <option value="default">Default</option>
 </select>
 <button id="speak-button">Speak</button>
 
@@ -23,8 +22,8 @@ if ('speechSynthesis' in window) {
     // Function to populate the voice selection dropdown
     const populateVoiceList = () => {
         const voices = speechSynthesis.getVoices();
-        voiceSelect.innerHTML = '<option value="default">Default</option>';
-        
+        voiceSelect.innerHTML = '';
+
         // Filter and add male voices
         const maleVoices = voices.filter(voice => voice.name.includes('male'));
         maleVoices.slice(0, 10).forEach(voice => {
@@ -33,7 +32,7 @@ if ('speechSynthesis' in window) {
             option.textContent = voice.name;
             voiceSelect.appendChild(option);
         });
-        
+
         // Filter and add female voices
         const femaleVoices = voices.filter(voice => voice.name.includes('female'));
         femaleVoices.slice(0, 10).forEach(voice => {
@@ -53,8 +52,9 @@ if ('speechSynthesis' in window) {
     // Function to speak the input text
     const speakText = () => {
         const text = textToSpeechInput.value;
+        const selectedVoice = voiceSelect.value;
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === voiceSelect.value);
+        utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === selectedVoice);
         speechSynthesis.speak(utterance);
     };
 

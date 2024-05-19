@@ -1,69 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Text to Speech</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech</title>
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=DSFtm1Hz"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        textarea {
+            width: 80%;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        select, button {
+            font-size: 16px;
+            padding: 10px;
+            margin: 5px;
+        }
+    </style>
 </head>
 <body>
-<h1>Text to Speech</h1>
-<textarea id="text-to-speech-input" rows="4" cols="50">Type your text here</textarea>
-<select id="voice-select">
-</select>
-<button id="speak-button">Speak</button>
+    <h1>Text to Speech</h1>
+    <textarea id="text" placeholder="Enter text here..."></textarea>
+    <br>
+    <label for="voice">Select Voice:</label>
+    <select id="voice"></select>
+    <br><br>
+    <button onclick="speak()">Speak</button>
 
-<script>
-// Check if browser supports Web Speech API
-if ('speechSynthesis' in window) {
-    const speakButton = document.getElementById('speak-button');
-    const textToSpeechInput = document.getElementById('text-to-speech-input');
-    const voiceSelect = document.getElementById('voice-select');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const voiceSelect = document.getElementById('voice');
 
-    // Function to populate the voice selection dropdown
-    const populateVoiceList = () => {
-        const voices = speechSynthesis.getVoices();
-        voiceSelect.innerHTML = '';
+            const maleVoices = [
+                'UK English Male', 'US English Male', 'Arabic Male', 'Armenian Male',
+                'Australian Male', 'Brazilian Portuguese Male', 'Chinese Male', 'Chinese (Hong Kong) Male',
+                'Czech Male', 'Danish Male', 'Deutsch Male', 'Finnish Male', 'French Male',
+                'Greek Male', 'Hebrew Male', 'Hungarian Male', 'Indonesian Male', 'Italian Male',
+                'Japanese Male', 'Korean Male', 'Latin Male', 'Lithuanian Male', 'Macedonian Male',
+                'Norwegian Male', 'Polish Male', 'Portuguese Male', 'Romanian Male', 'Russian Male',
+                'Serbian Male', 'Slovak Male', 'Spanish Male', 'Swedish Male', 'Tamil Male',
+                'Turkish Male', 'Thai Male', 'Vietnamese Male'
+            ];
 
-        // Filter and add male voices
-        const maleVoices = voices.filter(voice => voice.name.includes('male'));
-        maleVoices.slice(0, 10).forEach(voice => {
-            const option = document.createElement('option');
-            option.value = voice.name;
-            option.textContent = voice.name;
-            voiceSelect.appendChild(option);
+            const femaleVoices = [
+                'UK English Female', 'US English Female', 'Arabic Female', 'Armenian Female',
+                'Australian Female', 'Brazilian Portuguese Female', 'Chinese Female', 'Chinese (Hong Kong) Female',
+                'Czech Female', 'Danish Female', 'Deutsch Female', 'Finnish Female', 'French Female',
+                'Greek Female', 'Hebrew Female', 'Hungarian Female', 'Indonesian Female', 'Italian Female',
+                'Japanese Female', 'Korean Female', 'Latin Female', 'Lithuanian Female', 'Macedonian Female',
+                'Norwegian Female', 'Polish Female', 'Portuguese Female', 'Romanian Female', 'Russian Female',
+                'Serbian Female', 'Slovak Female', 'Spanish Female', 'Swedish Female', 'Tamil Female',
+                'Turkish Female', 'Thai Female', 'Vietnamese Female'
+            ];
+
+            function populateVoiceList() {
+                const option = document.createElement('option');
+                option.value = "";
+                option.text = "Select a voice";
+                voiceSelect.add(option);
+
+                maleVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice;
+                    option.text = voice;
+                    voiceSelect.add(option);
+                });
+
+                femaleVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice;
+                    option.text = voice;
+                    voiceSelect.add(option);
+                });
+            }
+
+            function speak() {
+                const text = document.getElementById('text').value;
+                const voice = voiceSelect.value;
+
+                if (text === "") {
+                    alert("Please enter some text to speak.");
+                    return;
+                }
+
+                if (voice === "") {
+                    alert("Please select a voice.");
+                    return;
+                }
+
+                responsiveVoice.speak(text, voice);
+            }
+
+            populateVoiceList();
+
+            window.speak = speak;
         });
-
-        // Filter and add female voices
-        const femaleVoices = voices.filter(voice => voice.name.includes('female'));
-        femaleVoices.slice(0, 10).forEach(voice => {
-            const option = document.createElement('option');
-            option.value = voice.name;
-            option.textContent = voice.name;
-            voiceSelect.appendChild(option);
-        });
-    };
-
-    // Populate voice list when voices are loaded
-    populateVoiceList();
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = populateVoiceList;
-    }
-
-    // Function to speak the input text
-    const speakText = () => {
-        const text = textToSpeechInput.value;
-        const selectedVoice = voiceSelect.value;
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === selectedVoice);
-        speechSynthesis.speak(utterance);
-    };
-
-    // Event listener for the speak button
-    speakButton.addEventListener('click', speakText);
-} else {
-    // Browser doesn't support speech synthesis
-    alert('Sorry, your browser does not support speech synthesis.');
-}
-</script>
+    </script>
 </body>
 </html>

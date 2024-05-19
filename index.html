@@ -8,6 +8,11 @@
 <body>
 <h1>Text to Speech</h1>
 <textarea id="text-to-speech-input" rows="4" cols="50">Type your text here</textarea>
+<select id="voice-select">
+    <option value="default">Default</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+</select>
 <button id="speak-button">Speak</button>
 
 <script>
@@ -15,11 +20,25 @@
 if ('speechSynthesis' in window) {
     const speakButton = document.getElementById('speak-button');
     const textToSpeechInput = document.getElementById('text-to-speech-input');
+    const voiceSelect = document.getElementById('voice-select');
 
     // Function to speak the input text
     const speakText = () => {
         const text = textToSpeechInput.value;
         const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Set voice based on selection
+        switch (voiceSelect.value) {
+            case 'male':
+                utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === 'Microsoft David Desktop - English (United States)');
+                break;
+            case 'female':
+                utterance.voice = speechSynthesis.getVoices().find(voice => voice.name === 'Microsoft Zira Desktop - English (United States)');
+                break;
+            default:
+                utterance.voice = speechSynthesis.getVoices()[0]; // Default voice
+        }
+
         speechSynthesis.speak(utterance);
     };
 

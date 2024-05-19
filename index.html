@@ -202,15 +202,19 @@
 
         function downloadAudio() {
     var downloadButton = document.getElementById('downloadButton');
-    var audioBlob = recorder.getBlob();
-    var url = URL.createObjectURL(audioBlob);
-    var a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = 'speech.mp3';
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
+    if (recorder && recorder.state === 'recording') {
+        recorder.stopRecording(function() {
+            var audioBlob = recorder.getBlob();
+            var url = URL.createObjectURL(audioBlob);
+            var a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'speech.mp3';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+    }
         }
     </script>
 </body>

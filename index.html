@@ -161,9 +161,16 @@
             }
         }
 
-        function stopRecording()
-        { recorder.stopRecording(function() { var blob = recorder.getBlob(); var downloadButton = document.getElementById('downloadButton'); downloadButton.href = URL.createObjectURL(blob); }); stopCountdown(); }
-        function enableDownload() {
+        function stopRecording() {
+            recorder.stopRecording(function() {
+            var blob = recorder.getBlob();
+            var downloadButton = document.getElementById('downloadButton');
+            downloadButton.href = URL.createObjectURL(blob);
+        });
+        stopCountdown();
+    }
+
+    function enableDownload() {
         var downloadButton = document.getElementById('downloadButton');
         downloadButton.style.display = 'inline-block';
     }

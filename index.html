@@ -201,7 +201,7 @@
         }
 
         function downloadAudio() {
-    if (recorder) {
+    if (recorder && recorder.state === 'recording') {
         recorder.stopRecording(function() {
             var audioBlob = recorder.getBlob();
             var url = URL.createObjectURL(audioBlob);
@@ -210,6 +210,7 @@
             a.download = 'speech.mp3';
             document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         });
     }

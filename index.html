@@ -8,98 +8,52 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .tts-container {
             text-align: center;
-            padding: 50px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        textarea {
+        input[type="text"] {
             width: 80%;
-            height: 100px;
-            margin-bottom: 20px;
-        }
-        select, button {
-            font-size: 16px;
             padding: 10px;
-            margin: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Text to Speech</h1>
-    <textarea id="text" placeholder="Enter text here..."></textarea>
-    <br>
-    <label for="voice">Select Voice:</label>
-    <select id="voice"></select>
-    <br><br>
-    <button onclick="speak()">Speak</button>
+    <div class="tts-container">
+        <h1>Text to Speech</h1>
+        <input type="text" id="textInput" placeholder="Enter text here...">
+        <button onclick="speak()">Speak</button>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const voiceSelect = document.getElementById('voice');
-
-            const maleVoices = [
-                'UK English Male', 'US English Male', 'Arabic Male', 'Armenian Male',
-                'Australian Male', 'Brazilian Portuguese Male', 'Chinese Male', 'Chinese (Hong Kong) Male',
-                'Czech Male', 'Danish Male', 'Deutsch Male', 'Finnish Male', 'French Male',
-                'Greek Male', 'Hebrew Male', 'Hungarian Male', 'Indonesian Male', 'Italian Male',
-                'Japanese Male', 'Korean Male', 'Latin Male', 'Lithuanian Male', 'Macedonian Male',
-                'Norwegian Male', 'Polish Male', 'Portuguese Male', 'Romanian Male', 'Russian Male',
-                'Serbian Male', 'Slovak Male', 'Spanish Male', 'Swedish Male', 'Tamil Male',
-                'Turkish Male', 'Thai Male', 'Vietnamese Male'
-            ];
-
-            const femaleVoices = [
-                'UK English Female', 'US English Female', 'Arabic Female', 'Armenian Female',
-                'Australian Female', 'Brazilian Portuguese Female', 'Chinese Female', 'Chinese (Hong Kong) Female',
-                'Czech Female', 'Danish Female', 'Deutsch Female', 'Finnish Female', 'French Female',
-                'Greek Female', 'Hebrew Female', 'Hungarian Female', 'Indonesian Female', 'Italian Female',
-                'Japanese Female', 'Korean Female', 'Latin Female', 'Lithuanian Female', 'Macedonian Female',
-                'Norwegian Female', 'Polish Female', 'Portuguese Female', 'Romanian Female', 'Russian Female',
-                'Serbian Female', 'Slovak Female', 'Spanish Female', 'Swedish Female', 'Tamil Female',
-                'Turkish Female', 'Thai Female', 'Vietnamese Female'
-            ];
-
-            function populateVoiceList() {
-                const option = document.createElement('option');
-                option.value = "";
-                option.text = "Select a voice";
-                voiceSelect.add(option);
-
-                maleVoices.forEach(voice => {
-                    const option = document.createElement('option');
-                    option.value = voice;
-                    option.text = voice;
-                    voiceSelect.add(option);
-                });
-
-                femaleVoices.forEach(voice => {
-                    const option = document.createElement('option');
-                    option.value = voice;
-                    option.text = voice;
-                    voiceSelect.add(option);
-                });
-            }
-
-            function speak() {
-                const text = document.getElementById('text').value;
-                const voice = voiceSelect.value;
-
-                if (text === "") {
-                    alert("Please enter some text to speak.");
-                    return;
-                }
-
-                if (voice === "") {
-                    alert("Please select a voice.");
-                    return;
-                }
-
-                responsiveVoice.speak(text, voice);
-            }
-
-            populateVoiceList();
-
-            window.speak = speak;
-        });
+        function speak() {
+            var text = document.getElementById('textInput').value;
+            responsiveVoice.speak(text);
+        }
     </script>
 </body>
 </html>

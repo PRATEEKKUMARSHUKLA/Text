@@ -66,6 +66,10 @@
         <input type="range" id="pitchSlider" min="0" max="2" step="0.1" value="1">
         <div class="slider-label">Speed: <span id="speedValue">1</span></div>
         <input type="range" id="speedSlider" min="0.1" max="2" step="0.1" value="1">
+        <div class="slider-label">Stability: <span id="stabilityValue">1</span></div>
+        <input type="range" id="stabilitySlider" min="0" max="2" step="0.1" value="1">
+        <div class="slider-label">Similarity: <span id="similarityValue">1</span></div>
+        <input type="range" id="similaritySlider" min="0" max="2" step="0.1" value="1">
         <button onclick="speak()">Speak</button>
     </div>
 
@@ -82,22 +86,40 @@
             });
         });
 
-        // Update displayed pitch and speed values
+        // Update displayed values for sliders
         document.getElementById('pitchSlider').addEventListener('input', function() {
             document.getElementById('pitchValue').textContent = this.value;
         });
         document.getElementById('speedSlider').addEventListener('input', function() {
             document.getElementById('speedValue').textContent = this.value;
         });
+        document.getElementById('stabilitySlider').addEventListener('input', function() {
+            document.getElementById('stabilityValue').textContent = this.value;
+        });
+        document.getElementById('similaritySlider').addEventListener('input', function() {
+            document.getElementById('similarityValue').textContent = this.value;
+        });
 
         // Function to speak the text
         function speak() {
             var text = document.getElementById('textInput').value;
             var voice = document.getElementById('voiceSelect').value;
-            var pitch = document.getElementById('pitchSlider').value;
-            var speed = document.getElementById('speedSlider').value;
+            var pitch = parseFloat(document.getElementById('pitchSlider').value);
+            var speed = parseFloat(document.getElementById('speedSlider').value);
+            var stability = parseFloat(document.getElementById('stabilitySlider').value);
+            var similarity = parseFloat(document.getElementById('similaritySlider').value);
+
             if (text && voice) {
-                responsiveVoice.speak(text, voice, {pitch: pitch, rate: speed});
+                // Modify pitch and speed based on stability and similarity sliders
+                // Higher stability means less variation in pitch and speed
+                var adjustedPitch = pitch * (1 + (1 - stability) * 0.2 * (Math.random() - 0.5));
+                var adjustedSpeed = speed * (1 + (1 - stability) * 0.2 * (Math.random() - 0.5));
+
+                // Higher similarity means pitch and speed closer to the original values
+                adjustedPitch = pitch * similarity + adjustedPitch * (1 - similarity);
+                adjustedSpeed = speed * similarity + adjustedSpeed * (1 - similarity);
+
+                responsiveVoice.speak(text, voice, { pitch: adjustedPitch, rate: adjustedSpeed });
             } else {
                 alert('Please enter text and select a voice.');
             }

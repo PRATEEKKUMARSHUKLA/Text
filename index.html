@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text to Speech</title>
     <script src="https://code.responsivevoice.org/responsivevoice.js?key=DSFtm1Hz"></script>
-    <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -69,10 +68,6 @@
             transform: translate(-50%, -50%);
             background-color: white;
         }
-        #downloadButton {
-            display: none;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
@@ -89,12 +84,7 @@
         <input type="range" id="pitchSlider" min="0" max="2" step="0.1" value="1">
         <div class="slider-label">Speed: <span id="speedValue">1</span></div>
         <input type="range" id="speedSlider" min="0.1" max="2" step="0.1" value="1">
-        <div class="slider-label">Stability: <span id="stabilityValue">1</span></div>
-        <input type="range" id="stabilitySlider" min="0" max="2" step="0.1" value="1">
-        <div class="slider-label">Similarity: <span id="similarityValue">1</span></div>
-        <input type="range" id="similaritySlider" min="0" max="2" step="0.1" value="1">
         <button onclick="speak()">Speak</button>
-        <a id="downloadButton" download="speech.mp3"><button>Download</button></a>
     </div>
 
     <script>
@@ -117,14 +107,6 @@
         document.getElementById('speedSlider').addEventListener('input', function() {
             document.getElementById('speedValue').textContent = this.value;
         });
-        document.getElementById('stabilitySlider').addEventListener('input', function() {
-            document.getElementById('stabilityValue').textContent = this.value;
-        });
-        document.getElementById('similaritySlider').addEventListener('input', function() {
-            document.getElementById('similarityValue').textContent = this.value;
-        });
-
-        var recorder;
 
         // Function to speak the text with countdown timer
         function speak() {
@@ -132,8 +114,6 @@
             var voice = document.getElementById('voiceSelect').value;
             var pitch = parseFloat(document.getElementById('pitchSlider').value);
             var speed = parseFloat(document.getElementById('speedSlider').value);
-            var stability = parseFloat(document.getElementById('stabilitySlider').value);
-            var similarity = parseFloat(document.getElementById('similaritySlider').value);
 
             if (text && voice) {
                 var words = text.split(/\s+/).length;
@@ -141,68 +121,39 @@
 
                 startCountdown(estimatedDuration);
 
-                // Modify pitch and speed based on stability and similarity sliders
-                var adjustedPitch = pitch * (1 + (1 - stability) * 0.2 * (Math.random() - 0.5));
-                var adjustedSpeed = speed * (1 + (1 - stability) * 0.2 * (Math.random() - 0.5));
-                adjustedPitch = pitch * similarity + adjustedPitch * (1 - similarity);
-                adjustedSpeed = speed * similarity + adjustedSpeed * (1 - similarity);
-
-                // Record the speech
-                var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                var source = audioContext.createBufferSource();
-                var dest = audioContext.createMediaStreamDestination();
-                source.connect(dest);
-                recorder = new RecordRTC(dest.stream, { type: 'audio' });
-
-                recorder.startRecording();
-                responsiveVoice.speak(text, voice, { pitch: adjustedPitch, rate: adjustedSpeed, onend: function() { stopRecording(); enableDownload(); } });
+                responsiveVoice.speak(text, voice, { pitch: pitch, rate: speed, onend: stopCountdown });
             } else {
                 alert('Please enter text and select a voice.');
             }
         }
 
-        function stopRecording() {
-            recorder.stopRecording(function() {
-            var blob = recorder.getBlob();
-            var downloadButton = document.getElementById('downloadButton');
-            downloadButton.href = URL.createObjectURL(blob);
-        });
-        stopCountdown();
-    }
+        // Countdown timer functionality
+        var countdownInterval;
 
-    function enableDownload() {
-        var downloadButton = document.getElementById('downloadButton');
-        downloadButton.style.display = 'inline-block';
-    }
+        function startCountdown(duration) {
+            var countdownCircle = document.getElementById('countdownCircle');
+            var countdownTimer = document.getElementById('countdownTimer');
+            var timeLeft = duration;
 
-    // Countdown timer functionality
-    var countdownInterval;
+            countdownCircle.style.display = 'flex';
 
-    function startCountdown(duration) {
-        var countdownCircle = document.getElementById('countdownCircle');
-        var countdownTimer = document.getElementById('countdownTimer');
-        var timeLeft = duration;
+            countdownTimer.textContent = timeLeft.toFixed(1);
 
-        countdownCircle.style.display = 'flex';
+            countdownInterval = setInterval(function() {
+                timeLeft -= 0.1;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownCircle.style.display = 'none';
+                } else {
+                    countdownTimer.textContent = timeLeft.toFixed(1);
+                }
+            }, 100);
+        }
 
-        countdownTimer.textContent = timeLeft.toFixed(1);
-
-        countdownInterval = setInterval(function() {
-            timeLeft -= 0.1;
-            if (timeLeft <= 0) {
-                clearInterval(countdownInterval);
-                countdownCircle.style.display = 'none';
-            } else {
-                countdownTimer.textContent = timeLeft.toFixed(1);
-            }
-        }, 100);
-    }
-
-    function stopCountdown() {
-        clearInterval(countdownInterval);
-        document.getElementById('countdownCircle').style.display = 'none';
-    }
-
-</script>
+        function stopCountdown() {
+            clearInterval(countdownInterval);
+            document.getElementById('countdownCircle').style.display = 'none';
+        }
+    </script>
 </body>
 </html>

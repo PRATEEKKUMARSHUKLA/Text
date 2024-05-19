@@ -29,6 +29,13 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+        select {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
         button {
             padding: 10px 20px;
             background-color: #007BFF;
@@ -46,13 +53,34 @@
     <div class="tts-container">
         <h1>Text to Speech</h1>
         <input type="text" id="textInput" placeholder="Enter text here...">
+        <select id="voiceSelect">
+            <option value="" disabled selected>Select a voice</option>
+        </select>
         <button onclick="speak()">Speak</button>
     </div>
 
     <script>
+        // Populate voice selection dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            var voiceSelect = document.getElementById('voiceSelect');
+            var voices = responsiveVoice.getVoices();
+            voices.forEach(function(voice) {
+                var option = document.createElement('option');
+                option.text = voice.name;
+                option.value = voice.name;
+                voiceSelect.add(option);
+            });
+        });
+
+        // Function to speak the text
         function speak() {
             var text = document.getElementById('textInput').value;
-            responsiveVoice.speak(text);
+            var voice = document.getElementById('voiceSelect').value;
+            if (text && voice) {
+                responsiveVoice.speak(text, voice);
+            } else {
+                alert('Please enter text and select a voice.');
+            }
         }
     </script>
 </body>
